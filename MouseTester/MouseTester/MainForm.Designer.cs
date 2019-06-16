@@ -1,4 +1,4 @@
-﻿namespace MouseTester
+﻿namespace ControllerTester
 {
     partial class MainForm
     {

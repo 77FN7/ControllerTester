@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace MouseTester
+namespace ControllerTester
 {
     public class IniFile   // revision 10
     {

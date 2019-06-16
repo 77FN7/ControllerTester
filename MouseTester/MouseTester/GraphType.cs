@@ -1,6 +1,6 @@
-﻿namespace MouseTester
+﻿namespace ControllerTester
 {
-    delegate void GraphFunction(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp);
+    delegate void GraphFunction(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp);
 
     class GraphType
     {

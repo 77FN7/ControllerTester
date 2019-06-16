@@ -3,11 +3,11 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace MouseTester
+namespace ControllerTester
 {
     public partial class MainForm : Form
     {
-        private RawMouse mouse = new RawMouse();
+        private RawController controller = new RawController();
 
         private Settings settings;
         private IniFile configini;
@@ -18,8 +18,8 @@ namespace MouseTester
         enum dualstate { disable, wait1, wait2, ready };
         private dualstate dual_state = dualstate.disable;
 
-        private MouseLog mlog1 = new MouseLog(), mlog2 = new MouseLog();
-        private MouseLog mlog;
+        private ControllerLog mlog1 = new ControllerLog(), mlog2 = new ControllerLog();
+        private ControllerLog mlog;
 
         private TextBox textBoxCPI1, textBoxDesc1;
 
@@ -46,8 +46,8 @@ namespace MouseTester
             this.textBoxCPI = textBoxCPI1;
             this.textBoxDesc = textBoxDesc1;
 
-            this.mouse.RegisterRawInputMouse(Handle);
-            this.mouse.mevent += new RawMouse.MouseEventHandler(this.logMouseEvent);
+            this.controller.RegisterRawInputHID(Handle);
+            this.controller.hidevent += new RawController.ControllerEventHandler(this.logMouseEvent);
 
             this.textBox1.Text = "Enter the correct CPI" +
                                  "\r\n        or\r\n" +
@@ -75,11 +75,11 @@ namespace MouseTester
         #region RAW MOUSE INPUT HANDLING
         protected override void WndProc(ref Message m)
         {
-            this.mouse.ProcessRawInput(m);
+            this.controller.ProcessRawInput(m);
             base.WndProc(ref m);
         }
 
-        public void logMouseEvent(object RawMouse, MouseEvent mevent)
+        public void logMouseEvent(object RawMouse, ControllerEvent mevent)
         {
             if (this.test_state == state.idle)
             {
@@ -103,7 +103,7 @@ namespace MouseTester
                     double x = 0.0;
                     double y = 0.0;
                     double ts_min = this.mlog.Events[0].ts;
-                    foreach (MouseEvent e in this.mlog.Events)
+                    foreach (ControllerEvent e in this.mlog.Events)
                     {
                         e.ts -= ts_min;
                         x += (double)e.lastx;
@@ -190,7 +190,7 @@ namespace MouseTester
                 this.toolStripStatusLabel1.Text = "Logging...";
                 this.mlog1.Clear();
                 this.mlog2.Clear();
-                this.mouse.StopWatchReset();
+                this.controller.StopWatchReset();
                 this.test_state = state.log;
                 buttonLog.Text = "Log Stop (F2)";
             }
@@ -211,9 +211,9 @@ namespace MouseTester
             if (dual_state == dualstate.ready && mlog2.Events.Count > 0 && mlog2.Events[0].ts < ts_min)
                 ts_min = mlog2.Events[0].ts;
 
-            foreach (MouseEvent me in this.mlog1.Events)
+            foreach (ControllerEvent me in this.mlog1.Events)
                 me.ts -= ts_min;
-            foreach (MouseEvent me in this.mlog2.Events)
+            foreach (ControllerEvent me in this.mlog2.Events)
                 me.ts -= ts_min;
 
             this.textBox1.Text = "Press the plot button to view data\r\n" +
@@ -227,7 +227,7 @@ namespace MouseTester
             this.test_state = state.idle;
         }
 
-        private void AddEvent(MouseEvent mevent)
+        private void AddEvent(ControllerEvent mevent)
         {
             if (dual_state == dualstate.ready)
             {
@@ -251,7 +251,7 @@ namespace MouseTester
                                      "3. Release the left mouse button\r\n";
                 this.toolStripStatusLabel1.Text = "Press the left mouse button";
                 this.mlog.Clear();
-                this.mouse.StopWatchReset();
+                this.controller.StopWatchReset();
                 this.test_state = state.measure_wait;
             }
         }
@@ -266,7 +266,7 @@ namespace MouseTester
                 this.toolStripStatusLabel1.Text = "Press the left mouse button";
                 this.mlog1.Clear();
                 this.mlog2.Clear();
-                this.mouse.StopWatchReset();
+                this.controller.StopWatchReset();
                 this.test_state = state.collect_wait;
             }
         }
@@ -284,7 +284,7 @@ namespace MouseTester
                 this.mlog1.Desc = textBoxDesc1.Text;
                 this.mlog2.Desc = textBoxDesc2.Text;
 
-                MousePlot mousePlot = new MousePlot(this.mlog1, dual_state == dualstate.ready ? this.mlog2 : null, settings);
+                ControllerPlot mousePlot = new ControllerPlot(this.mlog1, dual_state == dualstate.ready ? this.mlog2 : null, settings);
                 mousePlot.Show();
             }
         }

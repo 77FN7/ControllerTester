@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace MouseTester
+namespace ControllerTester
 {
-    public class MouseEvent
+    public class ControllerEvent
     {
         public ushort buttonflags;
         public int lastx;
@@ -11,7 +11,7 @@ namespace MouseTester
 
         public IntPtr hDevice;
 
-        public MouseEvent(IntPtr hDevice, ushort buttonflags, int lastx, int lasty, double ts)
+        public ControllerEvent(IntPtr hDevice, ushort buttonflags, int lastx, int lasty, double ts)
         {
             this.hDevice = hDevice;
             this.buttonflags = buttonflags;

@@ -1,7 +1,7 @@
 ﻿using OxyPlot;
 using OxyPlot.Series;
 
-namespace MouseTester
+namespace ControllerTester
 {
     class GraphComponents
     {

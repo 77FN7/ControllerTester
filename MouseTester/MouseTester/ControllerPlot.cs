@@ -9,14 +9,14 @@ using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.WindowsForms;
 
-namespace MouseTester
+namespace ControllerTester
 {
-    public partial class MousePlot : Form
+    public partial class ControllerPlot : Form
     {
         private Settings settings;
         private GraphComponents BlueComponent, RedComponent, GreenComponent, YellowComponent;
-        private MouseLog mlog, mlog2;
-        private List<MouseEvent> events = new List<MouseEvent>();
+        private ControllerLog mlog, mlog2;
+        private List<ControllerEvent> events = new List<ControllerEvent>();
         private int last_start;
         private int last_end;
         double x_min;
@@ -26,7 +26,7 @@ namespace MouseTester
         private bool dual = false;
 
         #region LOADING
-        public MousePlot(MouseLog Mlog, MouseLog Mlog2, Settings settings)
+        public ControllerPlot(ControllerLog Mlog, ControllerLog Mlog2, Settings settings)
         {
             this.settings = settings;
 
@@ -123,7 +123,7 @@ namespace MouseTester
             }
 
             if (!dual)
-                foreach (MouseEvent ev in mlog.Events)
+                foreach (ControllerEvent ev in mlog.Events)
                     events.Add(ev);
             else
             {
@@ -142,7 +142,7 @@ namespace MouseTester
 
                 while (i1 < mlog.Events.Count && i2 < mlog2.Events.Count)
                 {   // it could have been written in one line, but it would kill readability and i doubt performance advantage
-                    MouseEvent min = null;
+                    ControllerEvent min = null;
                     if (i1 == mlog.Events.Count)
                         min = mlog2.Events[i2++];
                     else if (i2 == mlog2.Events.Count)
@@ -355,13 +355,13 @@ namespace MouseTester
                 int height = checkBoxSize.Checked ? 600 : (int)this.plot1.Model.Height;
                 Brush backgnd = checkBoxBgnd.Checked ? null : new SolidBrush(Color.White);
 
-                MousePlot.Export(this.plot1.Model, saveFileDialog1.FileName, width, height, backgnd);
+                ControllerPlot.Export(this.plot1.Model, saveFileDialog1.FileName, width, height, backgnd);
             }
         }
         #endregion
 
         #region PLOT FUNCTIONS
-        private void plot_xcounts_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_xcounts_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             for (int i = last_start; i <= last_end; i++)
             {
@@ -374,7 +374,7 @@ namespace MouseTester
                 main_comp.Add(x, y);
             }
         }
-        private void plot_ycounts_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_ycounts_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             for (int i = last_start; i <= last_end; i++)
             {
@@ -387,7 +387,7 @@ namespace MouseTester
                 main_comp.Add(x, y);
             }
         }
-        private void plot_xycounts_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_xycounts_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             for (int i = last_start; i <= last_end; i++)
             {
@@ -411,7 +411,7 @@ namespace MouseTester
                 sec_comp.Add(x, y);
             }
         }
-        private void plot_interval_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_interval_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             for (int i = last_start; i <= last_end; i++)
             {
@@ -429,7 +429,7 @@ namespace MouseTester
                 main_comp.Add(x, y);
             }
         }
-        private void plot_frequency_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_frequency_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             for (int i = last_start; i <= last_end; i++)
             {
@@ -447,7 +447,7 @@ namespace MouseTester
                 main_comp.Add(x, y);
             }
         }
-        private void plot_xvelocity_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_xvelocity_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             if (mlog.Cpi > 0)
             {
@@ -470,7 +470,7 @@ namespace MouseTester
             else
                 MessageBox.Show("CPI value is invalid, please run Measure");
         }
-        private void plot_yvelocity_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_yvelocity_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             if (mlog.Cpi > 0)
             {
@@ -493,7 +493,7 @@ namespace MouseTester
             else
                 MessageBox.Show("CPI value is invalid, please run Measure");
         }
-        private void plot_xyvelocity_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_xyvelocity_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             if (mlog.Cpi > 0)
             {
@@ -532,7 +532,7 @@ namespace MouseTester
             else
                 MessageBox.Show("CPI value is invalid, please run Measure");
         }
-        private void plot_xsum_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_xsum_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             double y = 0;
 
@@ -547,7 +547,7 @@ namespace MouseTester
                 main_comp.Add(x, y);
             }
         }
-        private void plot_ysum_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_ysum_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             double y = 0;
 
@@ -562,7 +562,7 @@ namespace MouseTester
                 main_comp.Add(x, y);
             }
         }
-        private void plot_xysum_vs_time(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_xysum_vs_time(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             double y = 0;
 
@@ -590,7 +590,7 @@ namespace MouseTester
                 sec_comp.Add(x, y);
             }
         }
-        private void plot_x_vs_y(MouseLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
+        private void plot_x_vs_y(ControllerLog mlog, double delay, GraphComponents main_comp, GraphComponents sec_comp)
         {
             double x = 0.0;
             double y = 0.0;

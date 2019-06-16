@@ -5,17 +5,17 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 
-namespace MouseTester
+namespace ControllerTester
 {
-    public class MouseLog
+    public class ControllerLog
     {
         public double Cpi = 400.0;
         public string Desc = "MouseTester";
         public IntPtr hDevice;
 
-        private List<MouseEvent> events = new List<MouseEvent>(1000000);
+        private List<ControllerEvent> events = new List<ControllerEvent>(1000000);
 
-        public List<MouseEvent> Events
+        public List<ControllerEvent> Events
         {
             get
             {
@@ -23,7 +23,7 @@ namespace MouseTester
             }
         }
 
-        public void Add(MouseEvent e)
+        public void Add(ControllerEvent e)
         {
             this.events.Add(e);
         }
@@ -48,7 +48,7 @@ namespace MouseTester
                     {
                         string line = sr.ReadLine();
                         string[] values = line.Split(',');
-                        this.Add(new MouseEvent((IntPtr)0, 0, int.Parse(values[0]), int.Parse(values[1]), double.Parse(values[2], CultureInfo.InvariantCulture)));
+                        this.Add(new ControllerEvent((IntPtr)0, 0, int.Parse(values[0]), int.Parse(values[1]), double.Parse(values[2], CultureInfo.InvariantCulture)));
                     }
                 }
             }
@@ -67,7 +67,7 @@ namespace MouseTester
                     sw.WriteLine(this.Desc);
                     sw.WriteLine(this.Cpi.ToString());
                     sw.WriteLine("xCount,yCount,Time (ms)");
-                    foreach (MouseEvent e in this.events)
+                    foreach (ControllerEvent e in this.events)
                     {
                         sw.WriteLine(e.lastx.ToString() + "," + e.lasty.ToString() + "," + e.ts.ToString(CultureInfo.InvariantCulture));
                     }

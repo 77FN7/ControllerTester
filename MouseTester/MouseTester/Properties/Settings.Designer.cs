@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MouseTester.Properties
+namespace ControllerTester.Properties
 {
 
 

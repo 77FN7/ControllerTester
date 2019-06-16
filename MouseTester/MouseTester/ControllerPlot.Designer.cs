@@ -1,6 +1,6 @@
-﻿namespace MouseTester
+﻿namespace ControllerTester
 {
-    partial class MousePlot
+    partial class ControllerPlot
     {
         /// <summary>
         /// Required designer variable.

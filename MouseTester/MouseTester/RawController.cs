@@ -3,18 +3,14 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace MouseTester
+namespace ControllerTester
 {
-    class RawMouse
+    class RawController
     {
         private const int RIDEV_INPUTSINK = 0x00000100;
         private const int RID_INPUT = 0x10000003;
         private const int WM_INPUT = 0x00FF;
-        private const int RIM_TYPEMOUSE = 0;
-        private const int RI_MOUSE_LEFT_BUTTON_DOWN = 0x0001;
-        private const ushort RI_MOUSE_LEFT_BUTTON_UP = 0x0002;
-        private const int RI_MOUSE_RIGHT_BUTTON_DOWN = 0x0004;
-        private const ushort RI_MOUSE_RIGHT_BUTTON_UP = 0x0008;
+        private const int RIM_TYPEHID = 2;
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct RAWINPUTDEVICE
@@ -24,7 +20,7 @@ namespace MouseTester
             [MarshalAs(UnmanagedType.U2)]
             public ushort usUsage;
             [MarshalAs(UnmanagedType.U4)]
-            public int dwFlags;
+            public uint dwFlags;
             public IntPtr hwndTarget;
         }
 
@@ -32,9 +28,9 @@ namespace MouseTester
         internal struct RAWINPUTHEADER
         {
             [MarshalAs(UnmanagedType.U4)]
-            public int dwType;
+            public uint dwType;
             [MarshalAs(UnmanagedType.U4)]
-            public int dwSize;
+            public uint dwSize;
             public IntPtr hDevice;
             [MarshalAs(UnmanagedType.U4)]
             public int wParam;
@@ -44,9 +40,12 @@ namespace MouseTester
         internal struct RAWHID
         {
             [MarshalAs(UnmanagedType.U4)]
-            public int dwSizHid;
+            public uint dwSizeHid;
             [MarshalAs(UnmanagedType.U4)]
-            public int dwCount;
+            public uint dwCount;
+            // apparently this part isn't possible
+            //[MarshalAs(UnmanagedType.LPArray, SizeParamIndex = sizeof(dwSizeHid), SizeConst = dwCount)]
+            //public byte[] bRawData; // size = dwSizeHid * dwCount
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -127,11 +126,11 @@ namespace MouseTester
         private Stopwatch stopWatch = new Stopwatch();
         public double stopwatch_freq = 0.0;
 
-        public void RegisterRawInputMouse(IntPtr hwnd)
+        public void RegisterRawInputHID(IntPtr hwnd)
         {
             RAWINPUTDEVICE[] rid = new RAWINPUTDEVICE[1];
-            rid[0].usUsagePage = 1;
-            rid[0].usUsage = 2;
+            rid[0].usUsagePage = 0x01;
+            rid[0].usUsage = 0x05;
             rid[0].dwFlags = RIDEV_INPUTSINK;
             rid[0].hwndTarget = hwnd;
 
@@ -153,8 +152,8 @@ namespace MouseTester
             this.stopWatch.Start();
         }
 
-        public delegate void MouseEventHandler(object RawMouse, MouseEvent meventinfo);
-        public MouseEventHandler mevent;
+        public delegate void ControllerEventHandler(object RawController, ControllerEvent hideventinfo);
+        public ControllerEventHandler hidevent;
 
         public void ProcessRawInput(Message m)
         {
@@ -168,6 +167,7 @@ namespace MouseTester
                                 (uint)Marshal.SizeOf(typeof(RAWINPUTHEADER)));
 
                 IntPtr buffer = Marshal.AllocHGlobal((int)dwSize);
+                
                 try
                 {
                     if (buffer != IntPtr.Zero &&
@@ -179,13 +179,51 @@ namespace MouseTester
                     {
                         RAWINPUT raw = (RAWINPUT)Marshal.PtrToStructure(buffer, typeof(RAWINPUT));
 
-                        if (raw.header.dwType == RIM_TYPEMOUSE)
+                        if (raw.header.dwType == RIM_TYPEHID)
                         {
-                            if (mevent != null)
+                            if (hidevent != null)
                             {
-                                MouseEvent meventinfo = new MouseEvent(raw.header.hDevice, raw.mouse.buttonsStr.usButtonFlags , raw.mouse.lLastX, -raw.mouse.lLastY,
-                                                                       stopWatch.ElapsedTicks * 1e3 / Stopwatch.Frequency);
-                                mevent(this, meventinfo);
+                                if (!(raw.hid.dwSizeHid > 1     //Make sure our HID msg size more than 1. In fact the first ushort is irrelevant to us for now
+                                && raw.hid.dwCount > 0))    //Check that we have at least one HID msg
+                                {
+                                    return;
+                                }
+
+                                //Allocate a buffer for one HID input
+                                byte[] InputReport = new byte[raw.hid.dwSizeHid];
+
+                                //Debug.WriteLine("Raw input contains " + raw.hid.dwCount + " HID input report(s)");
+
+                                //For each HID input report in our raw input
+                                for (int i = 0; i < raw.hid.dwCount; i++)
+                                {
+                                    //Compute the address from which to copy our HID input
+                                    int hidInputOffset = 0;
+                                    unsafe
+                                    {
+                                        byte* source = (byte*)buffer;
+                                        source += sizeof(RAWINPUTHEADER) + sizeof(RAWHID) + (raw.hid.dwSizeHid * i);
+                                        hidInputOffset = (int)source;
+                                    }
+
+                                    //Copy HID input into our buffer
+                                    Marshal.Copy(new IntPtr(hidInputOffset), InputReport, 0, (int)raw.hid.dwSizeHid);
+                                    //
+                                    //for (int j = 0; j < InputReport.Length; j++)
+                                    //{
+                                    //    Debug.WriteLine("Input report " + j.ToString() + ": " + InputReport[j].ToString());
+                                    //}
+                                    int xval = InputReport[2] * 256 + InputReport[1];
+                                    int yval = InputReport[4] * 256 + InputReport[3];
+                                    //Debug.WriteLine("Input report: " + yval.ToString());
+
+                                    ControllerEvent hideventinfo = new ControllerEvent(raw.header.hDevice, 0, xval, yval,
+                                       stopWatch.ElapsedTicks * 1e3 / Stopwatch.Frequency);
+                                    hidevent(this, hideventinfo);
+                                    //ProcessInputReport(InputReport);
+                                }
+
+                                //Debug.WriteLine("received something: " + raw.header.hDevice.ToString() /*+ raw.hid.bRawData[0].ToString()*/);
                             }
                             //Debug.WriteLine((stopWatch.ElapsedTicks * 1e3 / Stopwatch.Frequency).ToString() + ", " +
                             //                raw.mouse.lLastX.ToString() + ", " +
